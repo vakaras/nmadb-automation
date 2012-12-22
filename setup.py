@@ -18,6 +18,9 @@ setup(
             'distribute',
             ],
         install_requires=[              # Dependencies for the package.
+            'celery',
+            'django-celery',
+            'billiard',
             ],
         scripts=[],                     # List of python script files.
         #data_files=[('/etc/init.d', ['init-script'])]
@@ -47,5 +50,7 @@ setup(
                 'Topic :: Software Development :: Libraries :: '
                 'Python Modules'),
             ],
-        license='LGPL'
+        license='LGPL',
+        entry_points = {'console_scripts': [
+            'billiard = billiard.forking:main',]},
         )
