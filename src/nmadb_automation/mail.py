@@ -76,7 +76,7 @@ def construct_email(subject='', body='', *args, **kwargs):
 @celery.task()
 def send_mass_mail(
         query, subject_template, body_template, from_email,
-        attachments=(), inline_attachments=(), **backend_args):
+        attachments=(), inline_attachments=(), async=True, **backend_args):
     """ Asynchronously sends mass mail.
 
     Query is an iterable of tuples (to_email, context). If context
@@ -88,11 +88,15 @@ def send_mass_mail(
         subject_template = template.Template(subject_template)
     if not isinstance(body_template, template.Template):
         body_template = template.Template(body_template)
+    if async:
+        constructor = construct_email.s
+    else:
+        constructor = construct_email
 
     for to, context in query:
         if not isinstance(context, template.Context):
             context = template.Context(context)
-        email = construct_email.s(
+        email = constructor(
                 subject_template.render(context),
                 html=body_template.render(context),
                 from_email=from_email,
@@ -100,4 +104,7 @@ def send_mass_mail(
                 attachments=attachments,
                 inline_attachments=inline_attachments
                 )
-        celery.chain(email, send.s(**backend_args))()
+        if async:
+            celery.chain(email, send.s(**backend_args))()
+        else:
+            send(email, **backend_args)
