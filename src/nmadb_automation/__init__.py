@@ -14,6 +14,11 @@ Add this to settings.py:
         'djcelery',
         'kombu.transport.django',
         )
+
+Workers can be launched by using:
+
+    bin/django celery worker --loglevel=info
+
 '''
 
 import os
