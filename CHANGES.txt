@@ -1,1 +1,1 @@
-0.1, {date} – Initial release.
+0.1, 2012-12-22 – Initial release.
