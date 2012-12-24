@@ -56,7 +56,8 @@ class AttachmentBase(models.Model):
     def attachment_upload(instance, filename):
         """ Stores attachment in ``attachments/<<name>>/date`` folder.
         """
-        return u'attachments/{0.name}/{0.name}'.format(instance)
+        return u'attachments/{0.name}/{1}'.format(
+                instance, instance.created.strftime(u'%Y%m%d%H%M%S'))
 
     name = models.CharField(
             max_length=256,
