@@ -1,3 +1,5 @@
+#! -*- encoding: utf-8 -*-
+
 from django import forms
 from django.utils.translation import ugettext as _
 
@@ -67,3 +69,17 @@ class AdminTemplateMailForm(
         TemplateMixin):
     """ Mail form for using in Django admin.
     """
+
+
+class MailCreateForm(forms.Form):
+    """ Basic mail form.
+    """
+
+    name = forms.CharField(
+            label=_(u'template name'),
+            help_text=_(
+                u'“mail” directory and file extension will be '
+                u'appended automatically.')
+            )
+    subject = forms.CharField(label=_(u'subject'))
+    body = forms.CharField(widget=forms.Textarea(), label=_(u'body'))
