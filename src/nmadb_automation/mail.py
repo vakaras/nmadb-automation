@@ -108,3 +108,52 @@ def send_mass_mail(
             celery.chain(email, send.s(**backend_args))()
         else:
             send(email, **backend_args)
+
+
+@celery.task()
+def send_template_mail(
+        mail_template, to, from_email, context, **backend_args):
+    """ Generate and send mail.
+    """
+
+    if not isinstance(context, template.Context):
+        context = template.Context(context)
+    if mail_template.plain_body:
+        body = render_template(mail_template.plain_body.name, context)
+    else:
+        body = None
+    email = construct_email(
+            template.Template(mail_template.subject).render(context),
+            body=body,
+            html=render_template(mail_template.html_body.name, context),
+            from_email=from_email,
+            to=to,
+            attachments=[
+                (atta.name, atta.attachment_file.read())
+                for atta in mail_template.attachment_set.all()
+                ],
+            inline_attachments=[
+                (atta.name, atta.attachment_file.read())
+                for atta in mail_template.inlineattachment_set.all()
+                ]
+            )
+    send(email, **backend_args)
+
+
+@celery.task()
+def send_mass_template_mail(
+        mail_template, query, from_email, async=True, **backend_args):
+    """ Generate and send mass mail.
+
+    Query is an iterable of tuples (to_email, context). If context
+    is not an instance of Context then it is passed as argument
+    to context.
+    """
+
+    if async:
+        sender = send_template_mail.delay
+    else:
+        sender = send_template_mail
+
+    for to, context in query:
+        sender(mail_template, [to], from_email, context, **backend_args)

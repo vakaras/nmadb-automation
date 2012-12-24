@@ -1,6 +1,8 @@
 from django import forms
 from django.utils.translation import ugettext as _
 
+from nmadb_automation import models
+
 
 class AdminMailFormMixin(forms.Form):
     """ Mixin that allows to transfer selection.
@@ -36,6 +38,16 @@ class CustomServerMixin(forms.Form):
         return password
 
 
+class TemplateMixin(forms.Form):
+    """ Form fields that allow to select Mail template.
+    """
+
+    email_template = forms.ModelChoiceField(
+            models.Email.objects,
+            label=_('email template'),
+            )
+
+
 class BaseMailForm(forms.Form):
     """ Basic mail form.
     """
@@ -45,5 +57,13 @@ class BaseMailForm(forms.Form):
 
 
 class AdminMailForm(AdminMailFormMixin, CustomServerMixin, BaseMailForm):
+    """ Mail form for using in Django admin.
+    """
+
+
+class AdminTemplateMailForm(
+        AdminMailFormMixin,
+        CustomServerMixin,
+        TemplateMixin):
     """ Mail form for using in Django admin.
     """
