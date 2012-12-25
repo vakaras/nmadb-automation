@@ -1,3 +1,5 @@
+import datetime
+
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.contenttypes.models import ContentType
@@ -56,8 +58,11 @@ class AttachmentBase(models.Model):
     def attachment_upload(instance, filename):
         """ Stores attachment in ``attachments/<<name>>/date`` folder.
         """
-        return u'attachments/{0.name}/{1}'.format(
-                instance, instance.created.strftime(u'%Y%m%d%H%M%S'))
+        if instance.created:
+            now = instance.created.strftime(u'%Y%m%d%H%M%S')
+        else:
+            now = datetime.datetime.now().strftime(u'%Y%m%d%H%M%S')
+        return u'attachments/{0.name}/{1}'.format(instance, now)
 
     name = models.CharField(
             max_length=256,

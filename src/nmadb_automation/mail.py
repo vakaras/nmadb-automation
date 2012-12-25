@@ -10,8 +10,10 @@ import celery
 from django.core import mail
 from django import template
 from django.utils.html import strip_tags
+from django.shortcuts import render
 
 from nmadb_automation.email_multi_related import EmailMultiRelated
+from nmadb_automation import forms
 
 
 @celery.task()
@@ -157,3 +159,103 @@ def send_mass_template_mail(
 
     for to, context in query:
         sender(mail_template, [to], from_email, context, **backend_args)
+
+
+def send_mail_admin_action(make, request, queryset):
+    """ Allows to send email.
+
+    Function is intended to be used as admin action.
+
+    ``make`` is a function that given an object from queryset should
+    return a list of tuples (email address, context).
+
+    This function makes assumption that primary key of objects in
+    queryset is ``id``.
+    """
+    form = None
+    if 'apply' in request.POST:
+        form = forms.AdminMailForm(
+                request.POST,
+                request.FILES)
+        if form.is_valid():
+            attachments = [
+                    (a.name, a.read())
+                    for a in request.FILES.getlist('attachments')]
+            query = []
+            for obj in queryset:
+                query.extend(make(obj))
+            cd = form.cleaned_data
+            send_mass_mail(
+                    query, cd['subject'], cd['body'], cd['username'],
+                    attachments=attachments,
+                    async=len(attachments) == 0,
+                    **cd
+                    )
+            return render(
+                    request,
+                    'admin/send_email.html',
+                    {'form': form})
+    if not form:
+        form = forms.AdminMailForm(
+                initial = {
+                    'host': 'smtp.gmail.com',
+                    'port': '587',
+                    '_selected_action': [
+                        unicode(pk)
+                        for pk in queryset.values_list('id', flat=True)
+                        ]
+                    })
+    return render(
+            request,
+            'admin/send_email.html',
+            {'form': form})
+
+
+def send_template_mail_admin_action(make, async, request, queryset):
+    """ Sends template email.
+
+    Function is intended to be used as admin action.
+
+    ``make`` is a function that given an object from queryset should
+    return a list of tuples (email address, context).
+
+    This function makes assumption that primary key of objects in
+    queryset is ``id``.
+    """
+    form = None
+    errors = None
+    if 'apply' in request.POST:
+        form = forms.AdminTemplateMailForm(request.POST)
+        if form.is_valid():
+            query = []
+            for obj in queryset:
+                query.extend(make(obj))
+            cd = form.cleaned_data
+            try:
+                send_mass_template_mail(
+                        cd['email_template'],
+                        query,
+                        cd['username'],
+                        async=async,
+                        **cd
+                        )
+            except Exception as e:
+                errors = unicode(e)
+            return render(
+                    request,
+                    'admin/send_template_email.html',
+                    {'form': form, 'errors': errors, 'async': async})
+    if not form:
+        form = forms.AdminTemplateMailForm(
+                initial={
+                    'host': 'smtp.gmail.com',
+                    'port': '587',
+                    '_selected_action': [
+                        unicode(pk)
+                        for pk in queryset.values_list('id', flat=True)
+                        ]
+                    })
+    return render(
+            request,
+            'admin/send_template_email.html',
+            {'form': form, 'errors': errors, 'async': async})
