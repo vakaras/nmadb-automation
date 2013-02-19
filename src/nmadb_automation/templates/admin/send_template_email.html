@@ -12,11 +12,7 @@
 
     {{ form.as_p }}
 
-    {% if async %}
-    <input type="hidden" name="action" value="send_async_template_mail" />
-    {% else %}
-    <input type="hidden" name="action" value="send_sync_template_mail" />
-    {% endif %}
+    <input type="hidden" name="action" value="{{ action }}" />
     <input type="submit" name="apply" value="Send" />
 </form>
 

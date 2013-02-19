@@ -211,7 +211,8 @@ def send_mail_admin_action(make, request, queryset):
             {'form': form})
 
 
-def send_template_mail_admin_action(make, async, request, queryset):
+def send_template_mail_admin_action(
+        make, async, request, queryset, action=None):
     """ Sends template email.
 
     Function is intended to be used as admin action.
@@ -222,6 +223,11 @@ def send_template_mail_admin_action(make, async, request, queryset):
     This function makes assumption that primary key of objects in
     queryset is ``id``.
     """
+    if action is None:
+        if async:
+            action = u'send_async_template_mail'
+        else:
+            action = u'send_sync_template_mail'
     form = None
     errors = None
     if 'apply' in request.POST:
@@ -244,7 +250,12 @@ def send_template_mail_admin_action(make, async, request, queryset):
             return render(
                     request,
                     'admin/send_template_email.html',
-                    {'form': form, 'errors': errors, 'async': async})
+                    {
+                        'form': form,
+                        'errors': errors,
+                        'async': async,
+                        'action': action,
+                        })
     if not form:
         form = forms.AdminTemplateMailForm(
                 initial={
@@ -258,4 +269,9 @@ def send_template_mail_admin_action(make, async, request, queryset):
     return render(
             request,
             'admin/send_template_email.html',
-            {'form': form, 'errors': errors, 'async': async})
+            {
+                'form': form,
+                'errors': errors,
+                'async': async,
+                'action': action,
+                })
