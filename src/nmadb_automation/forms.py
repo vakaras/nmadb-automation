@@ -34,9 +34,9 @@ class CustomServerMixin(forms.Form):
         except UnicodeEncodeError:
             raise forms.ValidationError((
                 _(u'Server does not support Unicode passwords.')))
-        if len(password) > 16:
+        if len(password) > 20:
             raise forms.ValidationError(
-                _(u'Password is longer than 16 symbols.'))
+                _(u'Password is longer than {0} symbols.').format(20))
         return password
 
 
