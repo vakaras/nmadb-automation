@@ -40,6 +40,7 @@ class EmailAdmin(utils.ModelAdmin):
 
 
 actions.register(
+        'nmadb-automation-create-mail',
         _(u'Create mail template'),
         'nmadb-automation-create-mail')
 
