@@ -5,6 +5,8 @@
 """
 
 
+import marshal, types
+
 import celery
 
 from django.core import mail
@@ -114,10 +116,12 @@ def send_mass_mail(
 
 @celery.task()
 def send_template_mail(
-        mail_template, to, from_email, context, **backend_args):
+        mail_template, to, from_email, context,
+        callback_code_string=None, **backend_args):
     """ Generate and send mail.
     """
 
+    original_context = context
     if not isinstance(context, template.Context):
         context = template.Context(context)
     if mail_template.plain_body:
@@ -140,11 +144,16 @@ def send_template_mail(
                 ]
             )
     send(email, **backend_args)
+    if callback_code_string is not None:
+        code = marshal.loads(callback_code_string)
+        callback = types.FunctionType(code, globals())
+        callback(to, from_email, original_context)
 
 
 @celery.task()
 def send_mass_template_mail(
-        mail_template, query, from_email, async=True, **backend_args):
+        mail_template, query, from_email, async=True, callback=None,
+        **backend_args):
     """ Generate and send mass mail.
 
     Query is an iterable of tuples (to_email, context). If context
@@ -156,9 +165,17 @@ def send_mass_template_mail(
         sender = send_template_mail.delay
     else:
         sender = send_template_mail
+    if callback is not None:
+        callback_code_string = marshal.dumps(callback.func_code)
 
     for to, context in query:
-        sender(mail_template, [to], from_email, context, **backend_args)
+        sender(
+                mail_template,
+                [to],
+                from_email,
+                context,
+                callback_code_string,
+                **backend_args)
 
 
 def send_mail_admin_action(make, request, queryset):
@@ -212,7 +229,7 @@ def send_mail_admin_action(make, request, queryset):
 
 
 def send_template_mail_admin_action(
-        make, async, request, queryset, action=None):
+        make, async, request, queryset, action=None, callback=None):
     """ Sends template email.
 
     Function is intended to be used as admin action.
@@ -243,6 +260,7 @@ def send_template_mail_admin_action(
                         query,
                         cd['username'],
                         async=async,
+                        callback=callback,
                         **cd
                         )
             except Exception as e:
