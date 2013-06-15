@@ -1,6 +1,6 @@
 import os
 import urllib
-import datetime
+from django.utils import timezone
 
 from django.core.files import File
 from django.contrib import admin
@@ -35,7 +35,7 @@ def create_mail(request):
                     if src:
                         attachment = models.InlineAttachment()
                         attachment.name = os.path.basename(src)
-                        attachment.created = datetime.datetime.now()
+                        attachment.created = timezone.now()
                         attachment.attachment_file.save(
                                 attachment.name,
                                 File(open(urllib.urlretrieve(src)[0])),

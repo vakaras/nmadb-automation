@@ -1,5 +1,4 @@
-import datetime
-
+from django.utils import timezone
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.contenttypes.models import ContentType
@@ -61,7 +60,7 @@ class AttachmentBase(models.Model):
         if instance.created:
             now = instance.created.strftime(u'%Y%m%d%H%M%S')
         else:
-            now = datetime.datetime.now().strftime(u'%Y%m%d%H%M%S')
+            now = timezone.now().strftime(u'%Y%m%d%H%M%S')
         return u'attachments/{0.name}/{1}'.format(instance, now)
 
     name = models.CharField(
