@@ -5,7 +5,9 @@
 """
 
 
-import marshal, types
+import marshal
+import types
+import smtplib
 
 import celery
 
@@ -18,17 +20,20 @@ from nmadb_automation.email_multi_related import EmailMultiRelated
 from nmadb_automation import forms
 
 
-@celery.task()
+@celery.task(rate_limit='20/m')
 def send(email, **backend_args):
     """ Send mail asynchronously.
 
     If ``backend_args`` is provided then uses custom connection.
     """
-    if backend_args:
-        connection = mail.get_connection(use_tls=True, **backend_args)
-        connection.send_messages([email])
-    else:
-        email.send()
+    try:
+        if backend_args:
+            connection = mail.get_connection(use_tls=True, **backend_args)
+            connection.send_messages([email])
+        else:
+            email.send()
+    except smtplib.SMTPServerDisconnected as exc:
+        raise send.retry(exc=exc)
 
 
 @celery.task()
