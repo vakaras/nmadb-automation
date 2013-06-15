@@ -54,8 +54,14 @@ class BaseMailForm(forms.Form):
     """ Basic mail form.
     """
 
-    subject = forms.CharField(label=_(u'subject'))
-    body = forms.CharField(widget=forms.Textarea(), label=_(u'body'))
+    subject = forms.CharField(
+            label=_(u'subject'),
+            )
+    body = forms.CharField(
+            widget=forms.Textarea(),
+            label=_(u'body'),
+            help_text=_(u'The text is treated as HTML markup.'),
+            )
 
 
 class AdminMailForm(AdminMailFormMixin, CustomServerMixin, BaseMailForm):
