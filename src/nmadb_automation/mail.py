@@ -20,7 +20,7 @@ from nmadb_automation.email_multi_related import EmailMultiRelated
 from nmadb_automation import forms
 
 
-@celery.task(rate_limit='20/m')
+@celery.task(rate_limit='20/m', max_retries=12)
 def send(email, **backend_args):
     """ Send mail asynchronously.
 
@@ -33,7 +33,9 @@ def send(email, **backend_args):
         else:
             email.send()
     except smtplib.SMTPServerDisconnected as exc:
-        raise send.retry(exc=exc)
+        raise send.retry(
+            exc=exc,
+            countdown=min(180 * (2 ** send.request.retries), 21600))
 
 
 @celery.task()
@@ -119,7 +121,7 @@ def send_mass_mail(
             send(email, **backend_args)
 
 
-@celery.task()
+@celery.task(rate_limit='20/m', max_retries=12)
 def send_template_mail(
         mail_template, to, from_email, context,
         callback_code_string=None, **backend_args):
@@ -148,7 +150,12 @@ def send_template_mail(
                 for atta in mail_template.inlineattachment_set.all()
                 ]
             )
-    send(email, **backend_args)
+    try:
+        send(email, **backend_args)
+    except smtplib.SMTPServerDisconnected as exc:
+        raise send_template_mail.retry(
+            exc=exc,
+            countdown=min(180 * (2 ** send_template_mail.request.retries), 21600))
     if callback_code_string is not None:
         code = marshal.loads(callback_code_string)
         callback = types.FunctionType(code, globals())
