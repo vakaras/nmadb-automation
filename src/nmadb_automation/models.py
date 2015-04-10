@@ -50,18 +50,19 @@ class Email(models.Model):
                 self, self.modified.strftime(u'%Y-%m-%d %H:%M:%S'))
 
 
+def attachment_upload(instance, filename):
+    """ Stores attachment in ``attachments/<<name>>/date`` folder.
+    """
+    if instance.created:
+        now = instance.created.strftime(u'%Y%m%d%H%M%S')
+    else:
+        now = timezone.now().strftime(u'%Y%m%d%H%M%S')
+    return u'attachments/{0.name}/{1}'.format(instance, now)
+
+
 class AttachmentBase(models.Model):
     """ Attachment abstract model.
     """
-
-    def attachment_upload(instance, filename):
-        """ Stores attachment in ``attachments/<<name>>/date`` folder.
-        """
-        if instance.created:
-            now = instance.created.strftime(u'%Y%m%d%H%M%S')
-        else:
-            now = timezone.now().strftime(u'%Y%m%d%H%M%S')
-        return u'attachments/{0.name}/{1}'.format(instance, now)
 
     name = models.CharField(
             max_length=256,

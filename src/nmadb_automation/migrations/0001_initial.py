@@ -1,97 +1,66 @@
 # -*- coding: utf-8 -*-
-import datetime
-from south.db import db
-from south.v2 import SchemaMigration
-from django.db import models
+from __future__ import unicode_literals
+
+from django.db import models, migrations
+import nmadb_automation.models
 
 
-class Migration(SchemaMigration):
+class Migration(migrations.Migration):
 
-    def forwards(self, orm):
-        # Adding model 'Email'
-        db.create_table('nmadb_automation_email', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('subject', self.gf('django.db.models.fields.CharField')(max_length=256)),
-            ('html_body', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'+', to=orm['dbtemplates.Template'])),
-            ('plain_body', self.gf('django.db.models.fields.related.ForeignKey')(related_name=u'+', to=orm['dbtemplates.Template'])),
-        ))
-        db.send_create_signal('nmadb_automation', ['Email'])
+    dependencies = [
+        ('dbtemplates', '__first__'),
+    ]
 
-        # Adding model 'Attachment'
-        db.create_table('nmadb_automation_attachment', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=256)),
-            ('attachment_file', self.gf('django.db.models.fields.files.FileField')(max_length=100)),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('modified', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('email', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['nmadb_automation.Email'])),
-        ))
-        db.send_create_signal('nmadb_automation', ['Attachment'])
-
-        # Adding model 'InlineAttachment'
-        db.create_table('nmadb_automation_inlineattachment', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=256)),
-            ('attachment_file', self.gf('django.db.models.fields.files.FileField')(max_length=100)),
-            ('created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('modified', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, blank=True)),
-            ('email', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['nmadb_automation.Email'])),
-        ))
-        db.send_create_signal('nmadb_automation', ['InlineAttachment'])
-
-
-    def backwards(self, orm):
-        # Deleting model 'Email'
-        db.delete_table('nmadb_automation_email')
-
-        # Deleting model 'Attachment'
-        db.delete_table('nmadb_automation_attachment')
-
-        # Deleting model 'InlineAttachment'
-        db.delete_table('nmadb_automation_inlineattachment')
-
-
-    models = {
-        'dbtemplates.template': {
-            'Meta': {'ordering': "('name',)", 'object_name': 'Template', 'db_table': "'django_template'"},
-            'content': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'creation_date': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'last_changed': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'sites': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': "orm['sites.Site']", 'null': 'True', 'blank': 'True'})
-        },
-        'nmadb_automation.attachment': {
-            'Meta': {'object_name': 'Attachment'},
-            'attachment_file': ('django.db.models.fields.files.FileField', [], {'max_length': '100'}),
-            'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'email': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['nmadb_automation.Email']"}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'modified': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '256'})
-        },
-        'nmadb_automation.email': {
-            'Meta': {'object_name': 'Email'},
-            'html_body': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'+'", 'to': "orm['dbtemplates.Template']"}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'plain_body': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "u'+'", 'to': "orm['dbtemplates.Template']"}),
-            'subject': ('django.db.models.fields.CharField', [], {'max_length': '256'})
-        },
-        'nmadb_automation.inlineattachment': {
-            'Meta': {'object_name': 'InlineAttachment'},
-            'attachment_file': ('django.db.models.fields.files.FileField', [], {'max_length': '100'}),
-            'created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'email': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['nmadb_automation.Email']"}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'modified': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '256'})
-        },
-        'sites.site': {
-            'Meta': {'ordering': "('domain',)", 'object_name': 'Site', 'db_table': "'django_site'"},
-            'domain': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
-        }
-    }
-
-    complete_apps = ['nmadb_automation']
+    operations = [
+        migrations.CreateModel(
+            name='Attachment',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(help_text='With extension.', max_length=256, verbose_name='file name')),
+                ('attachment_file', models.FileField(upload_to=nmadb_automation.models.attachment_upload, verbose_name='attachment')),
+                ('created', models.DateTimeField(auto_now_add=True, verbose_name='created')),
+                ('modified', models.DateTimeField(auto_now=True, verbose_name='modified')),
+            ],
+            options={
+                'abstract': False,
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Email',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('subject', models.CharField(help_text='You can use Django template syntax.', max_length=256, verbose_name='subject')),
+                ('created', models.DateTimeField(auto_now_add=True, verbose_name='created')),
+                ('modified', models.DateTimeField(auto_now=True, verbose_name='modified')),
+                ('html_body', models.ForeignKey(related_name='+', verbose_name='body in HTML', to='dbtemplates.Template')),
+                ('plain_body', models.ForeignKey(related_name='+', blank=True, to='dbtemplates.Template', help_text='If ommited, then it is generated from HTML by removing HTML tags.', null=True, verbose_name='body in plain text')),
+            ],
+            options={
+                'verbose_name': 'Email',
+                'verbose_name_plural': 'Emails',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='InlineAttachment',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(help_text='With extension.', max_length=256, verbose_name='file name')),
+                ('attachment_file', models.FileField(upload_to=nmadb_automation.models.attachment_upload, verbose_name='attachment')),
+                ('created', models.DateTimeField(auto_now_add=True, verbose_name='created')),
+                ('modified', models.DateTimeField(auto_now=True, verbose_name='modified')),
+                ('email', models.ForeignKey(verbose_name='email', to='nmadb_automation.Email')),
+            ],
+            options={
+                'abstract': False,
+            },
+            bases=(models.Model,),
+        ),
+        migrations.AddField(
+            model_name='attachment',
+            name='email',
+            field=models.ForeignKey(verbose_name='email', to='nmadb_automation.Email'),
+            preserve_default=True,
+        ),
+    ]
