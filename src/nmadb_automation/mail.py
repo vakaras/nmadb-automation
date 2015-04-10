@@ -179,6 +179,8 @@ def send_mass_template_mail(
         sender = send_template_mail
     if callback is not None:
         callback_code_string = marshal.dumps(callback.func_code)
+    else:
+        callback_code_string = None
 
     for to, context in query:
         sender(
@@ -217,7 +219,7 @@ def send_mail_admin_action(make, request, queryset):
             send_mass_mail(
                     query, cd['subject'], cd['body'], cd['username'],
                     attachments=attachments,
-                    async=len(attachments) == 0,
+                    async=False,
                     **cd
                     )
             return render(
