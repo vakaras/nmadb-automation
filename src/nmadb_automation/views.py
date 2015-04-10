@@ -18,7 +18,7 @@ from nmadb_automation import forms, models
 
 @admin.site.admin_view
 @render_to('admin/file-form.html')
-@transaction.commit_on_success
+@transaction.atomic
 def create_mail(request):
     """ Creates mail template from HTML document.
     """
