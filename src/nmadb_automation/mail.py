@@ -219,7 +219,7 @@ def send_mail_admin_action(make, request, queryset):
             send_mass_mail(
                     query, cd['subject'], cd['body'], cd['username'],
                     attachments=attachments,
-                    async=len(attachments) == 0,
+                    async=False,
                     **cd
                     )
             return render(
